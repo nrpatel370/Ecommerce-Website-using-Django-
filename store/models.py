@@ -18,11 +18,11 @@ class Collection(models.Model):
 class Product(models.Model):
     title = models.CharField(max_length=255)
     slug = models.SlugField(default='-')
-    description = models.TextField()
+    description = models.TextField(null=True, blank=True)
     unit_price = models.DecimalField(max_digits=6, decimal_places=2, validators=[MinValueValidator(1)])
-    inventory = models.IntegerField()
+    inventory = models.IntegerField(validators=[MinValueValidator(1)])
     last_update = models.DateTimeField(auto_now=True)
-    collection = models.ForeignKey(Collection, on_delete=models.PROTECT)
+    collection = models.ForeignKey(Collection, on_delete=models.PROTECT, related_name='products')
     promotions = models.ManyToManyField(Promotion, blank=True)
     
     def __str__(self):
@@ -80,7 +80,7 @@ class Order(models.Model):
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.PROTECT)
-    product = models.ForeignKey(Product, on_delete=models.PROTECT, null=True)
+    product = models.ForeignKey(Product, on_delete=models.PROTECT, null=True, related_name='orderitems')
     quantity = models.PositiveSmallIntegerField()
     unit_price = models.DecimalField(max_digits=6, decimal_places=2)
 
@@ -94,3 +94,9 @@ class Address(models.Model):
     city = models.CharField(max_length=255)
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
     zip = models.CharField(max_length=5, null=True)
+
+class Review(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews')
+    name = models.CharField(max_length=255)
+    description = models.TextField()
+    date = models.DateField(auto_now_add=True)
